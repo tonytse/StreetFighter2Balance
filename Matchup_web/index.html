@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>AI Matchup Chart - Super Street Fighter II</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="./css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+.cdash { background-color: #cccccc; }
+.c1, .c0 { background-color: #641300; }
+
+/*.c2 { background-color: #c41411; } */
+.c2 { background-color: #a61c00; }
+
+/*.c3 { background-color: #dd191d; }*/
+.c3 { background-color: #d43a1b; }
+
+/*.c4 { background-color: #e84e40; }*/
+.c4 { background-color: #df7864; }
+
+.c5 { background-color: #eac100; }
+
+/*.c6 { background-color: #42bd41; }*/
+.c6 { background-color: #a5c722; }
+
+/*.c7 { background-color: #259b24; }*/
+.c7 { background-color: #849f20; }
+
+/*.c8 { background-color: #0a7e07; }*/
+.c8 { background-color: #476a27; }
+
+.c9, .c10 { background-color: #263b15; }
+
+section.gp-section {
+  /* overwrite display: table; so it doesn't grow with content */
+  display: block;
+}
+
+#tableContainer {
+  padding: 0px;
+}
+
+table {
+  margin: 0 auto;
+}
+
+th {
+  /* so old label stays on top of face */
+  position: relative;
+}
+
+td, th {
+  vertical-align: top;
+  padding: 4px;
+  height: 1px; 
+}
+
+td div, th div {
+  height: 100%;
+  width: 100%;
+  color: white;
+  display: table;
+  font-size: 20px;
+}
+
+td div span, th div span {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+table td img, table th img {
+  width: 37px;
+}
+
+td div.arrow, th div.arrow {
+  margin-top: 10px;
+  color: black;
+}
+
+td:hover, th:hover {
+  cursor: pointer;
+}
+
+td:hover div {
+  transform: scale(1.3);
+}
+
+#matchups {
+  background-color: #fff;
+  color: #000;
+}
+
+#matchups p.brief {
+  text-align: center;
+  margin: 0px 20px 30px 20px;
+  font-size: 18px;
+  overflow: hidden;
+}
+
+#individualScore {
+  font-size: 13px;
+  display: none;
+  padding: 20px;
+  padding-bottom: 40px;
+  background-color: #ffffcc;
+}
+
+#individualScore p {
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+#individualScore div {
+  background-color: white;
+  padding: 10px;
+}
+
+.bigger {
+  transform: scale(1.4);
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<script src="./js/jquery.min.js"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="./js/bootstrap.min.js"></script>
+
+
+<script>
+
+  function getData(file) {
+
+    $('table').fadeOut('slow', function() {
+      $.get(file, function(data) {
+        var lines = data.match(/[^\r\n]+/g);
+        $('.header-row').empty();
+        $('tbody').empty();
+
+        lines.shift(); // skip 1st line 
+        
+        renderCells(lines);
+           
+        $('table').fadeIn('slow');
+        addTableListeners();
+
+      }, 'text');
+    });
+  }
+
+  $(document).on('ready', function() {
+    getData('./data.txt');
+  });
+
+  function renderCells(lines) {
+
+    for (var lineIndex = 0, len = lines.length; lineIndex < len; lineIndex++) {
+      var values = lines[lineIndex].match(/[^\t]+/g);
+      var rowEl = $('<tr></tr>');
+      var style = '';
+
+      for (var columnIndex = 0, len2 = values.length; columnIndex < len2; columnIndex++) {
+
+        if (lineIndex == 0) {
+          // add empty cells on top row
+          if (columnIndex == 0) {
+            $('.header-row').append('<th> </th>');
+          }
+          // add cells on top row
+          $('.header-row').append('<th>' + colorCell(values[columnIndex]) + '</th>');
+        } else { // non top rows
+
+          // add border every 4 rows
+          if (!(lineIndex % 4) && lineIndex != 16 && lineIndex != 32) {
+            style = 'style="border-bottom: 1px solid black"';
+          } else {
+            style = '';
+          }
+
+          // add cells
+          if (columnIndex == 0) {
+            rowEl.append('<td></td>');
+            rowEl.append('<th '+style+'>' + colorCell(values[columnIndex]) + '</th>');
+          } else {
+            rowEl.append('<td '+style+'>' + colorCell(values[columnIndex]) + '</td>');
+          }
+          if (columnIndex == len2 - 1) {
+            // add faces to the right of the table
+            rowEl.append(rowEl.find('th:first').clone());
+          }
+        }
+      }
+
+      // round cells or not
+      if (lineIndex != 0) {
+        rowEl.find('td span').text(function(i, old_content) {
+            return old_content;
+        });
+        $('tbody').append(rowEl);
+      }
+    }
+    
+    $('table').append($('thead tr').clone()); // add faces to the end of the table
+    
+  }
+
+  function colorCell(content) {
+    var roundContent;
+    if (content <= 5) {
+      roundContent = Math.floor(content);
+    } else {
+      roundContent = Math.ceil(content);
+    }
+    if (content == " ") return '<div><span></span></div>';
+    if (content == "-") return '<div class="cdash"><span>' + content + '</span></div>';
+    if (!isNaN(content)) return '<div class="c' + roundContent + '"><span>' + content + '</span></div>';
+    return '<img class="new" src="images/'+ content +'.png" />';
+  }
+
+  function addTableListeners() {
+    $('table').delegate('td','mouseover mouseleave', function(e) {
+      if (e.type == 'mouseover') {
+        $(".header-row th:nth-child("+ ($(this).index() + 1) +")").addClass("bigger");
+        $(this).parent().find('th').addClass("bigger");
+      }
+      else {
+        $(".header-row th:nth-child("+ ($(this).index() + 1) +")").removeClass("bigger");
+        $(this).parent().find('th').removeClass("bigger");
+      }
+    });
+  }
+
+  function renderIndividualScore(player, file) {
+    $('#individualScore').show();
+    $.get(file, function(data) {
+      var lines = data.match(/[^\r\n]+/g);
+
+      var matches = lines.filter(function(item) { return item.indexOf(player) != -1 });
+      var chars = lines[1].split(/\t/);
+      chars = chars.slice(0, -1);
+      chars[0] = player;
+      matches.forEach(function(item) {
+        var scores = item.split(/\t/);
+        scores = scores.slice(0, -1);
+        var paragraph = $('<p></p>');
+        paragraph.append('<span>'+ chars[0] + ' (' + scores[0] + '): </span>');
+        scores.forEach(function(score, index) {
+          if (index > 0) {
+            paragraph.append('<span>'+ chars[index] + '[' + score + '], </span>');  
+          }
+        });
+        $('#individualScore div').append(paragraph);
+      });
+    }, 'text');
+  }
+
+
+  
+</script>
+
+<section id="matchups" class="gp-section content-section text-center" data-speed="2">
+    <div class="container">
+      <div class="row">
+
+        <div id='tableContainer'>
+          <table>
+            <thead>
+              <tr class="header-row">
+              </tr>
+            </head>
+            <tbody>
+              
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+</body>
+</html>

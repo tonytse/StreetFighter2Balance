@@ -1,0 +1,30 @@
+{
+  "done": {
+    "variables": {
+      "enemy_matches_won": {
+        "op": "equal",
+        "reference": 1
+      },
+      "matches_won": {
+        "op": "equal",
+        "reference": 1
+      },
+	  "continuetimer": {
+        "op": "less-than",
+        "reference": 10
+      },
+      "2p_matches_won": {
+        "op": "equal",
+        "reference": 1
+      }
+    }
+  },
+  "reward": {
+    "variables": {
+      "score": {
+        "reward": 1.0
+      }
+    }
+  },
+  "crop": [0, 16, 256, 200]
+}

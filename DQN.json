@@ -1,0 +1,1 @@
+{"batch_size": 64, "gamma": 0.8227895970029786, "learning_rate": 0.00018734229803741371, "learning_starts": 1000, "train_freq": 128, "gradient_steps": 146, "exploration_final_eps": 0.03317328152571017, "exploration_fraction": 0.14405883869380742}
